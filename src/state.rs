@@ -22,34 +22,57 @@ impl State {
     panic!("Couldn't find player in the map");
   }
 
+  fn in_bounds(&self, i: isize, j: isize) -> bool {
+    let (i, j) = if i >= 0 || j >= 0 {
+      (i as usize, j as usize)
+    } else {
+      return false;
+    };
+
+    i < self.map.len() && j < self.map[i].len()
+  }
+
+  fn is_empty(&self, i: isize, j: isize) -> bool {
+    if !self.in_bounds(i, j) {
+      return false;
+    }
+
+    match self.map[i as usize][j as usize] {
+      Cell::Empty => true,
+      _ => false,
+    }
+  }
+
+  fn is_wall(&self, i: isize, j: isize) -> bool {
+    if !self.in_bounds(i, j) {
+      return false;
+    }
+
+    match self.map[i as usize][j as usize] {
+      Cell::Wall => true,
+      _ => false,
+    }
+  }
+
   pub fn step(&mut self, dir: Dir) {
     let (i, j) = self.pos();
 
-    match dir {
-      Dir::Up => {
-        if i > 0 && j < self.map[i - 1].len() && !self.map[i - 1][j].is_wall() {
-          self.map[i][j] = Cell::Empty;
-          self.map[i - 1][j] = Cell::Player;
-        }
+    let (i_new, j_new) = dir.shift(i as isize, j as isize);
+
+    if self.is_empty(i_new, j_new) {
+      // println!("Moving from ({},{}) to ({},{})", i, j, i_new, j_new);
+      self.map[i][j] = Cell::Empty;
+      self.map[i_new as usize][j_new as usize] = Cell::Player;
+    } else if self.is_wall(i_new, j_new) {
+
+      let (i_nnew, j_nnew) = dir.shift(i_new, j_new);
+
+      if self.is_empty(i_nnew, j_nnew) {
+        self.map[i][j] = Cell::Empty;
+        self.map[i_new as usize][j_new as usize] = Cell::Player;
+        self.map[i_nnew as usize][j_nnew as usize] = Cell::Wall;
       }
-      Dir::Down => {
-        if i < self.map.len() - 1 && j < self.map[i + 1].len() && !self.map[i + 1][j].is_wall() {
-          self.map[i][j] = Cell::Empty;
-          self.map[i + 1][j] = Cell::Player;
-        }
-      }
-      Dir::Left => {
-        if j > 0 && !self.map[i][j - 1].is_wall() {
-          self.map[i][j] = Cell::Empty;
-          self.map[i][j - 1] = Cell::Player;
-        }
-      }
-      Dir::Right => {
-        if j < self.map[i].len() - 1 && !self.map[i][j + 1].is_wall() {
-          self.map[i][j] = Cell::Empty;
-          self.map[i][j + 1] = Cell::Player;
-        }
-      }
+      
     }
   }
 }
@@ -74,7 +97,7 @@ impl Default for State {
           Cell::Wall,
           Cell::Empty,
           Cell::Empty,
-          Cell::Empty,
+          Cell::Wall,
           Cell::Empty,
           Cell::Empty,
           Cell::Empty,
@@ -86,7 +109,7 @@ impl Default for State {
           Cell::Wall,
           Cell::Empty,
           Cell::Empty,
-          Cell::Empty,
+          Cell::Wall,
           Cell::Empty,
           Cell::Empty,
           Cell::Empty,
@@ -189,18 +212,21 @@ pub enum Cell {
   Player,
 }
 
-impl Cell {
-  pub fn is_wall(&self) -> bool {
-    match self {
-      Self::Wall => true,
-      _ => false,
-    }
-  }
-}
-
 pub enum Dir {
   Up,
   Down,
   Left,
   Right,
+}
+
+impl Dir {
+
+  pub fn shift(&self, i: isize, j: isize) -> (isize, isize) {
+    match self {
+      Self::Up => (i - 1, j),
+      Self::Down => (i + 1, j),
+      Self::Right => (i, j + 1),
+      Self::Left => (i, j - 1),
+    }
+  }
 }

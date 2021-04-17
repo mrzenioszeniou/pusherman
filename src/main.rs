@@ -5,7 +5,7 @@ mod state;
 use crate::state::{Cell, Dir, State};
 use piston_window::*;
 
-const CELL_SIZE_PX: f64 = 32_f64;
+const CELL_SIZE_PX: f64 = 18_f64;
 const BLACK_RGB: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
 const RED_RGB: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
 const WHITE_RGB: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
