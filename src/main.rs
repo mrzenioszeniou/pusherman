@@ -16,7 +16,11 @@ const WHITE_RGB: [f32; 4] = [1.0, 1.0, 1.0, 1.0];
 const TARGET_BORDER_PX: f64 = 1_f64;
 
 fn main() {
-  let mut state = levels::level2();
+  let mut states = [levels::level1(), levels::level2()];
+  let mut level_idx = 0;
+
+  println!("Level {}.. GO!", level_idx);
+  let mut state = &mut states[level_idx];
 
   let map_size = state.size();
   let window_size = [
@@ -52,10 +56,15 @@ fn main() {
         }
         _ => {}
       }
+    }
 
-      if state.victory() {
-        println!("Victory!!");
+    if state.victory() {
+      level_idx += 1;
+      if level_idx >= states.len() {
+        return;
       }
+      println!("Level {} .. GO!", level_idx);
+      state = &mut states[level_idx];
     }
 
     window.draw_2d(&e, |c, g, _| {
